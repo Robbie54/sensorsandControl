@@ -5,17 +5,18 @@ close all
 
 bag = rosbag('Modelnew2_360.bag');
 
-% rosbag info 'Modelnew2_360.bag';
+rosbag info 'Modelnew2_360.bag';
 % rosbag info 'CalibNew_360.bag';
 
 imageRaw = select(bag, 'Topic', '/camera/color/image_raw');
+messagedepth = readMessages(imagedepth,1);
 
 
 message = readMessages(imageRaw,1); %read topic (message 1)
 % imageData = message.Data;
 width = message{1}.Height; %get specific data from 1st message in topic 
 height = message{1}.Width;
-
+ 
 imageData = message{1}.Data;
    
 R = imageData(1:3:end,:); %take one number every three from the data to get r data 
