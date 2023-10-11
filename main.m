@@ -34,8 +34,11 @@ clc
     %I am unsure how to use the depth data for anything useful 
         % bag = rosbag('Modelnew2_360.bag');
         % 
-        % rosbag info 'Modelnew2_360.bag';
-        % % rosbag info 'CalibNew_360.bag';
+        %  rosbag info 'Modelnew2_360.bag';
+        % rosbag info 'CalibNew_360.bag';
+        % cameraInfo = select(bag, 'Topic','/camera/color/camera_info');
+        % cameraInfoMessage = readMessages(cameraInfo,50); %read topic (message 1)
+
         % 
         % imageRaw = select(bag, 'Topic', '/camera/color/image_raw');
         % 
@@ -71,44 +74,73 @@ clc
         % hold on;
         % imshow(RGB);
     
-
-%                                                                                                                                                       % Depth 
-    %Next function i want to show the depth topic in matlab then see if i can
-    %overlay it in the dobot plot 
-    %weirdly the depth data is same size as rgb so seems to be rgb? idk 
+%% Depth show
      
     bag = rosbag('Modelnew2_360.bag');
     depthTopic = select(bag, 'Topic', '/camera/depth/image_rect_raw');  
     firstDepthImage = readMessages(depthTopic,1); %can get all 
-    depthImage = readImage(firstDepthImage{1});
+    secondDepthImage = readMessages(depthTopic,2); %can get all 
+
+    formatedDepthImage = readImage(firstDepthImage{1}); %some how readImage works was meant to be discontinued and now rosReadImage
+    formatedDepthImage2 = readImage(secondDepthImage{1});
+
+    imshow(uint8((double(formatedDepthImage)/350)*255)) %since this is a depth image we need to scale to be within uint8 range to display colour 350 was chosen based on largest number in data set
+   
     
-    imshow(uint8((double(depthImage)/350)*255)) %since this is a depth image we need to scale to be within uint8 range to display colour
+    %these are now correct unless they change between messages 
+    %http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/CameraInfo.html
+        focalLength      = [610.339, 609.110]; %taken from topic /camera/color/camera_info message 1 
+        principalPoint   = [317.109, 228.684];
+
+        %NOT CORRECT intrinsics taken from help page need to find camera info 
+        imageSize        = size(formatedDepthImage,[1,2]);
+        intrinsics       = cameraIntrinsics(focalLength,principalPoint,imageSize);
+        depthScaleFactor = 5e3;
+        maxCameraDepth   = 5;
+
+    %%Point cloud 
+    ptCloud = pcfromdepth(formatedDepthImage, depthScaleFactor, intrinsics); 
+    ptCloud2 = pcfromdepth(formatedDepthImage2, depthScaleFactor, intrinsics); 
+
+    pcshow(ptCloud, VerticalAxis="Y", VerticalAxisDir="Up", ViewPlane="YX");
+
+    ptCloudRef = ptCloud;
+    ptCloudCurrent = ptCloud2;
+    gridSize = 0.1;
     
-    rosbag info Modelnew2_360.bag
-    % topic = select(bag, 'Topic','/camera/depth/image_rect_raw/compressed')
-    %refer to ptCloudCurrent for single point cloud data needed 
-      
-    %pcfromdepth needs camera intrinsics (focal length etc) 
-     % pcfromdepth()
-     % pcshow()
+    %these might be wehre we put the em sensor trans and rot 
+    fixed = pcdownsample(ptCloudRef,gridAverage=gridSize);
+    moving = pcdownsample(ptCloudCurrent,gridAverage=gridSize);
+
+    tform = pcregistericp(moving,fixed,Metric="pointToPlane");
+    ptCloudAligned = pctransform(ptCloudCurrent,tform);
+
+    mergeSize = 0.015;
+    ptCloudScene1 = pcmerge(ptCloudRef,ptCloudAligned,mergeSize);
+
+    % Visualize the input images.
+    figure
+    subplot(2,2,1)
+    imshow(ptCloudRef.Color)
+    title("First input image",Color="w")
+
+    subplot(2,2,3)
+    imshow(ptCloudCurrent.Color)
+    title("Second input image",Color="w")
+
+    % Visualize the world scene.
+    subplot(2,2,[2,4])
+    pcshow(ptCloudScene1,VerticalAxis="Y",VerticalAxisDir="Down")
+    title("Initial world scene")
+    xlabel("X (m)")
+    ylabel("Y (m)")
+    zlabel("Z (m)")
 
 
-    %  depthImage = imread("Ultrasound(3).png");
-    % imshow(depthImage)
-    % colorImage = imread("Ultrasound(3).png");
-    % imshow("Ultrasound(3).png")
-    % focalLength      = [535.4, 539.2];
-    % principalPoint   = [320.1, 247.6];
-    % imageSize        = size(depthImage,[1,2]);
-    % intrinsics       = cameraIntrinsics(focalLength,principalPoint,imageSize);
-    % depthScaleFactor = 5e3;
-    % maxCameraDepth   = 5;
-    % ptCloud = pcfromdepth(depthImage,depthScaleFactor, intrinsics, ...
-    %                   ColorImage=colorImage, ...
-    %                   DepthRange=[0 maxCameraDepth]);
-    % pcshow(ptCloud, VerticalAxis="Y", VerticalAxisDir="Up", ViewPlane="YX");
 
 
+
+%% The below section is from the link on how to open a point cloud use for reference but not useful for bags 
     %%From 
     %%https://au.mathworks.com/help/vision/ug/3-d-point-cloud-registration-and-stitching.html?fbclid=IwAR3Amoezr36uL9f3yXKkBhPA5fCq7WxHiYWApa7ps96OtMsiiAO91k1QZe4
     fullfile(toolboxdir("vision"))
