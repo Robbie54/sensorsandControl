@@ -11,3 +11,10 @@
 - no functions in main
 - depth image can be displayed
 - not in point cloud yet but lots of commeted out stuff to try and use
+
+# Authors: 
+
+Milo Boyd
+Max Deda
+Robert Howe
+
