@@ -14,7 +14,7 @@
 
 # Authors: 
 
-Milo Boyd
-Max Deda
-Robert Howe
+Milo Boyd = miloboyd
+Max Deda = zum78
+Robert Howe = Robbie54
 
