@@ -1,4 +1,4 @@
-%%Assignment 1
+%% Assignment 1
 
 %removing functions as they shouldn't be in main messes the workspace up
 %need to make a bag class instead
@@ -74,13 +74,14 @@ clc
 % hold on;
 % imshow(RGB);
 
-%% Depth show with loops
+%% Rosbag Depth Reading
 bag = rosbag('Modelnew2_360.bag');
 depthTopic = select(bag, 'Topic', '/camera/depth/image_rect_raw');
-depthTopicMessageNum = depthTopic.NumMessages;
 
+depthTopicMessageNum = depthTopic.NumMessages;
 depthImagesOut = readMessages(depthTopic);
 
+%% Original Method
 % % formatedDepthImages = zeros(depthTopicMessageNum,1);
 %
 % formatedDepthImages = cell(depthTopicMessageNum,10);
@@ -105,39 +106,85 @@ depthImagesOut = readMessages(depthTopic);
 %     % pause(0.1);  % Pause for a short duration to view each image
 % end
 
-% Initialize an empty cell array to store point clouds
-formatedDepthImages = cell(1, depthTopicMessageNum);
-pointClouds = cell(1, depthTopicMessageNum);
+%% Method Two - Creating a Combined Point Cloud
+% % Initialize an empty cell array to store point clouds
+% formatedDepthImages = cell(1, depthTopicMessageNum);
+% pointClouds = cell(1, depthTopicMessageNum);
+% 
+% % Initialize an empty point cloud to accumulate all point clouds
+% masterPointCloud = pointCloud(zeros(0, 3));
+% 
+% for i = 1:depthTopicMessageNum
+%     formatedDepthImage = readImage(depthImagesOut{i});
+% 
+%     % Calculate intrinsics for each depth image
+%     imageSize = size(formatedDepthImage, [1, 2]);
+%     focalLength = [610.339, 609.110]; % Adjust these values as needed
+%     principalPoint = [317.109, 228.684]; % Adjust these values as needed
+%     intrinsics = cameraIntrinsics(focalLength, principalPoint, imageSize);
+%     depthScaleFactor = 5e3;
+% 
+%     % Convert the depth image to a point cloud
+%     pointCloud = pcfromdepth(formatedDepthImage, depthScaleFactor, intrinsics);
+% 
+%     % Accumulate the current point cloud into the master point cloud
+%     masterPointCloud = pcmerge(masterPointCloud, pointCloud, 0.01); % Adjust the threshold as needed
+% end
+% 
+% % Visualize the accumulated master point cloud
+% figure;
+% pcshow(masterPointCloud, 'VerticalAxis', 'Y', 'VerticalAxisDir', 'Up', 'ViewPlane', 'YX');
+% title('Master Point Cloud');
+% xlabel('X (m)');
+% ylabel('Y (m)');
+% zlabel('Z (m)');
 
-% Initialize an empty point cloud to accumulate all point clouds
-masterPointCloud = pointCloud(zeros(0, 3));
+%% Method Three - Creating a Combined Depth Image
+% Initialize a placeholder size for fullDepthMap
+fullDepthMap = [];
+
+% Create an empty cell array to store intrinsics for each depth image
+intrinsicsList = cell(1, depthTopicMessageNum);
 
 for i = 1:depthTopicMessageNum
-    formatedDepthImage = readImage(depthImagesOut{i});
+    depthImage = readImage(depthImagesOut{i});
     
-    % Calculate intrinsics for each depth image
-    imageSize = size(formatedDepthImage, [1, 2]);
+    if isempty(fullDepthMap)
+        % If fullDepthMap is empty, set its size based on the first depth image
+        imageSize = size(depthImage, [1, 2]);
+        fullDepthMap = zeros(imageSize);
+    end
+    
+    % Convert depthImage to double
+    depthImage = double(depthImage);
+    
+    % Calculate intrinsics for the current depth image
+    imageSize = size(depthImage, [1, 2]);
     focalLength = [610.339, 609.110]; % Adjust these values as needed
     principalPoint = [317.109, 228.684]; % Adjust these values as needed
     intrinsics = cameraIntrinsics(focalLength, principalPoint, imageSize);
     depthScaleFactor = 5e3;
-    
-    % Convert the depth image to a point cloud
-    pointCloud = pcfromdepth(formatedDepthImage, depthScaleFactor, intrinsics);
-    
-    % Accumulate the current point cloud into the master point cloud
-    masterPointCloud = pcmerge(masterPointCloud, pointCloud, 0.01); % Adjust the threshold as needed
+
+    % Store intrinsics in the list
+    intrinsicsList{i} = intrinsics;
+
+    % Add the current depth image to the fullDepthMap
+    fullDepthMap = fullDepthMap + depthImage;
 end
 
-% Visualize the accumulated master point cloud
+% Convert the stitched depth map into a 3D point cloud
+pointCloud = createPointCloud(fullDepthMap, intrinsicsList{1}, depthScaleFactor);
+
+% Visualize the 3D point cloud
 figure;
-pcshow(masterPointCloud, 'VerticalAxis', 'Y', 'VerticalAxisDir', 'Up', 'ViewPlane', 'YX');
-title('Master Point Cloud');
+pcshow(pointCloud, 'VerticalAxis', 'Y', 'VerticalAxisDir', 'Up', 'ViewPlane', 'YX');
+title('3D Environment Model');
 xlabel('X (m)');
 ylabel('Y (m)');
 zlabel('Z (m)');
 
 
+%% Original Point Cloud Attempt
     % %% Camera Setup
     % 
     % %these are now correct unless they change between messages
