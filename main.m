@@ -73,16 +73,23 @@ clc
         % close all
         % hold on;
         % imshow(RGB);
-    
-%% Depth show
-     
+
+%% Depth show with loops 
     bag = rosbag('Modelnew2_360.bag');
     depthTopic = select(bag, 'Topic', '/camera/depth/image_rect_raw');  
-    firstDepthImage = readMessages(depthTopic,1); %can get all 
-    secondDepthImage = readMessages(depthTopic,2); %can get all 
+    depthTopicMessageNum = depthTopic.NumMessages;
+  
+    depthImagesOut = readMessages(depthTopic);
+    % formatedDepthImages = zeros(depthTopicMessageNum,1);
+    
+    formatedDepthImages = cell(depthTopicMessageNum,10);
+    for i = 1:depthTopicMessageNum
+        formatedDepthImages= readImage(depthImagesOut{i});
+    end
+    %%
 
-    formatedDepthImage = readImage(firstDepthImage{1}); %some how readImage works was meant to be discontinued and now rosReadImage
-    formatedDepthImage2 = readImage(secondDepthImage{1});
+    formatedDepthImage = readImage(depthImagesOut{1}); %some how readImage works was meant to be discontinued and now rosReadImage
+    formatedDepthImage2 = readImage(depthImagesOut{2});
 
     imshow(uint8((double(formatedDepthImage)/350)*255)) %since this is a depth image we need to scale to be within uint8 range to display colour 350 was chosen based on largest number in data set
    
@@ -112,7 +119,7 @@ clc
     fixed = pcdownsample(ptCloudRef,gridAverage=gridSize);
     moving = pcdownsample(ptCloudCurrent,gridAverage=gridSize);
 
-    tform = pcregistericp(moving,fixed,Metric="pointToPlane");
+    tform = pcregistericp(ptCloud,ptCloud2,Metric="pointToPlane");
     ptCloudAligned = pctransform(ptCloudCurrent,tform);
 
     mergeSize = 0.015;
@@ -121,17 +128,26 @@ clc
     % Visualize the input images.
     figure
     subplot(2,2,1)
-    imshow(ptCloudRef.Color)
+    imshow(uint8((double(formatedDepthImage)/350)*255))
     title("First input image",Color="w")
 
     subplot(2,2,3)
-    imshow(ptCloudCurrent.Color)
+    imshow(uint8((double(formatedDepthImage2)/350)*255))
     title("Second input image",Color="w")
 
     % Visualize the world scene.
     subplot(2,2,[2,4])
     pcshow(ptCloudScene1,VerticalAxis="Y",VerticalAxisDir="Down")
     title("Initial world scene")
+    xlabel("X (m)")
+    ylabel("Y (m)")
+    zlabel("Z (m)")
+
+    ptCloudScene2 = helperStitchPointCloudsUsingColor(formatedDepthImages);
+
+    figure
+    pcshow(ptCloudScene2,VerticalAxis="Y",VerticalAxisDir="Down")
+    title("Updated world scene with registration using color information")
     xlabel("X (m)")
     ylabel("Y (m)")
     zlabel("Z (m)")
@@ -183,10 +199,61 @@ clc
     zlabel("Z (m)")
     
 
+    ptCloudScene2 = helperStitchPointCloudsUsingColor(livingRoomData);
+
+    figure
+    pcshow(ptCloudScene2,VerticalAxis="Y",VerticalAxisDir="Down")
+    title("Updated world scene with registration using color information")
+    xlabel("X (m)")
+    ylabel("Y (m)")
+    zlabel("Z (m)")
 
 
 
+%%
+function ptCloudScene = helperStitchPointCloudsUsingColor(livingRoomData)
 
+% Extract the first point cloud as reference.
+ptCloudRef = livingRoomData{1};
+
+% Downsample the point cloud.
+gridSize = 0.1;
+moving = pcdownsample(ptCloudRef,gridAverage=gridSize);
+
+% Set the merge size to merge each point cloud to the scene.
+mergeSize = 0.015;
+ptCloudScene = ptCloudRef;
+
+% Store the transformation object that accumulates the transformation.
+accumTform = rigidtform3d();
+
+for i = 2:length(livingRoomData)
+    ptCloudCurrent = livingRoomData{i};
+       
+    % Use previous moving point cloud as reference.
+    fixed = moving;
+    moving = pcdownsample(ptCloudCurrent,gridAverage=gridSize);
+    
+    % Apply ICP registration.
+    tform = pcregistericp(moving,fixed,Metric="pointToPlaneWithColor",InlierDistance=0.1);
+
+    % Transform the current point cloud to the reference coordinate system
+    % defined by the first point cloud.
+    accumTform = rigidtform3d(accumTform.A * tform.A);
+    ptCloudAligned = pctransform(ptCloudCurrent,accumTform);
+    
+    % Update the world scene.
+    ptCloudScene = pcmerge(ptCloudScene,ptCloudAligned,mergeSize);
+end
+
+    % During the recording, the Kinect was pointing downward.
+    % Transform the scene so that the ground plane is parallel
+    % to the X-Z plane.
+    angle = -10;
+    translation = [0 0 0];
+    tform = rigidtform3d([angle 0 0],translation);
+    ptCloudScene = pctransform(ptCloudScene,tform);
+end
 
 
 
