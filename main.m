@@ -1,3 +1,9 @@
+%% File Setup
+clf
+close all
+clear all
+clc
+
 %% Rosbag Depth Reading
 bag = rosbag('Modelnew2_360.bag');
 depthTopic = select(bag, 'Topic', '/camera/depth/image_rect_raw');
