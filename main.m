@@ -21,6 +21,28 @@ selectedIndices = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 22, 
 % Initialize an empty cell array to store the selected point clouds
 selectedPointClouds = cell(1, numel(selectedIndices));
 
+%% Read TSV file 
+t = readtable("forCali_GroundTruth_new360.tsv", "FileType","text",'Delimiter', '\t');
+
+%find xyz points 
+
+% tData = zeros(70,3);
+% tData(:,1) = t(:,10);
+
+
+
+tData = zeros(70,3);
+tData(:,1) = t.Rx;
+tData(:,2) = t.Ry;
+tData(:,3) = t.Rz;
+
+% for i = 1:70
+%     figure;
+%     plot3(tData(i,1),tData(i,2),tData(i,3), 'ro'); % 'ro' represents red circles
+%     hold on;
+% end
+axis equal;
+
 %% Define the camera intrinsics for all depth images (outside the loop)
 intrinsicsList = cell(1, depthTopicMessageNum);
 for k = 1:depthTopicMessageNum
@@ -30,6 +52,8 @@ end
 
 %% Iterate through the selected point clouds and store them in the cell array
 for i = 1:numel(selectedIndices)
+
+
     index = selectedIndices(i);
 
     depthImage = readImage(depthImagesOut{index});
@@ -41,8 +65,19 @@ for i = 1:numel(selectedIndices)
     % Convert the depth image to a 3D point cloud using the correct intrinsics
     pointCloud = createPointCloud(depthImage, intrinsics, depthScaleFactor);
 
+    %this is for translating and rotating point clouds needs to be done for
+    %each
+    rotationAngles = [tData(i,1),tData(i,2),tData(i,3)]; %this is wrong just random rotation of tsv we need to calibrate
+    translation = [0 0 0];
+    tform = rigidtform3d(rotationAngles,translation);
+
+    %Transform each point cloud.
+
+    ptCloudOut = pctransform(pointCloud,tform);
+
     % Store the point cloud in the selectedPointClouds array
-    selectedPointClouds{i} = pointCloud;
+    selectedPointClouds{i} = ptCloudOut;
+   
 end
 
 %% Initialize the master point cloud with the first selected point cloud
@@ -50,7 +85,7 @@ masterPointCloud = selectedPointClouds{1};
 
 %% Merge the remaining selected point clouds one by one
 for i = 2:numel(selectedIndices)
-    masterPointCloud = pcmerge(masterPointCloud, selectedPointClouds{i}, 0.001); % You can adjust the mergeSize if needed
+    masterPointCloud = pcmerge(masterPointCloud, selectedPointClouds{i}, 0.001); % You can adjust the mergeSize if needed this will change point density 
 end
 
 %% Visualize the master point cloud
@@ -84,12 +119,12 @@ XYZ = cat(3, X, Y, Z);
 pointCloudFunc = pointCloud(XYZ);
 
 % Visualize the point cloud (optional)
-figure;
-pcshow(pointCloudFunc);
-title('3D Point Cloud');
-xlabel('X (m)');
-ylabel('Y (m)');
-zlabel('Z (m)');
+% figure;
+% pcshow(pointCloudFunc);
+% title('3D Point Cloud');
+% xlabel('X (m)');
+% ylabel('Y (m)');
+% zlabel('Z (m)');
 end
 
 %% Region of Interest (ROI) - WIP
