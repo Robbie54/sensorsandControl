@@ -143,32 +143,32 @@ depthImagesOut = readMessages(depthTopic);
 %% Method Three - Creating a Combined Depth Image
 % % Initialize a placeholder size for fullDepthMap
 % fullDepthMap = [];
-%
+% 
 % % Create an empty cell array to store intrinsics for each depth image
 % intrinsicsList = cell(1, depthTopicMessageNum);
-%
+% 
 % for i = 1:depthTopicMessageNum
 %     depthImage = readImage(depthImagesOut{i});
-%
+% 
 %     if isempty(fullDepthMap)
 %         % If fullDepthMap is empty, set its size based on the first depth image
 %         imageSize = size(depthImage, [1, 2]);
 %         fullDepthMap = zeros(imageSize);
 %     end
-%
+% 
 %     % Convert depthImage to double
 %     depthImage = double(depthImage);
-%
+% 
 %     % Calculate intrinsics for the current depth image
 %     imageSize = size(depthImage, [1, 2]);
 %     focalLength = [610.339, 609.110]; % Adjust these values as needed
 %     principalPoint = [317.109, 228.684]; % Adjust these values as needed
 %     intrinsics = cameraIntrinsics(focalLength, principalPoint, imageSize);
 %     depthScaleFactor = 5e3;
-%
+% 
 %     % Store intrinsics in the list
 %     intrinsicsList{i} = intrinsics;
-%
+% 
 %     % Add the current depth image to the fullDepthMap
 %     fullDepthMap = fullDepthMap + depthImage;
 % end
