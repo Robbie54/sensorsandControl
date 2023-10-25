@@ -1,7 +1,7 @@
 %% File Setup
+clear all
 clf
 close all
-clear all
 clc
 
 %% Rosbag Depth Reading
@@ -60,6 +60,37 @@ title('Selected Merged Point Cloud');
 xlabel('X (m)');
 ylabel('Y (m)');
 zlabel('Z (m)');
+
+%% Create Point Cloud Function
+function pointCloudFunc = createPointCloud(depthImage, intrinsics, depthScaleFactor)
+[rows, cols] = size(depthImage);
+
+% Initialize arrays to store X, Y, and Z coordinates
+X = zeros(rows, cols);
+Y = zeros(rows, cols);
+Z = zeros(rows, cols);
+
+% Apply intrinsics and depth scale factor to convert to 3D coordinates
+for r = 1:rows
+    for c = 1:cols
+        Z(r, c) = double(depthImage(r, c)) / depthScaleFactor;
+        X(r, c) = (c - intrinsics.PrincipalPoint(1)) * Z(r, c) / intrinsics.FocalLength(1);
+        Y(r, c) = (r - intrinsics.PrincipalPoint(2)) * Z(r, c) / intrinsics.FocalLength(2);
+    end
+end
+
+% Create a point cloud using the pointCloud constructor without color
+XYZ = cat(3, X, Y, Z);
+pointCloudFunc = pointCloud(XYZ);
+
+% Visualize the point cloud (optional)
+figure;
+pcshow(pointCloudFunc);
+title('3D Point Cloud');
+xlabel('X (m)');
+ylabel('Y (m)');
+zlabel('Z (m)');
+end
 
 %% Region of Interest (ROI) - WIP
 % % Define the region of interest (ROI) limits
