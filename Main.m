@@ -22,16 +22,16 @@ selectedIndices = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 22, 
 selectedPointClouds = cell(1, numel(selectedIndices));
 
 %% Read TSV file 
-t = readtable("forCali_GroundTruth_new360.tsv", "FileType","text",'Delimiter', '\t');
+t = readtable("TestRandT.txt", "FileType","text",'Delimiter', '\t');
 %find xyz points 
 
 % tData = zeros(70,3);
 % tData(:,1) = t(:,10);
 
-tData = zeros(70,3);
+tData = zeros(80,3);
 tData(:,1) = t.Rx;
-tData(:,2) = t.Ry;
-tData(:,3) = t.Rz;
+tData(:,3) = t.Ry;
+tData(:,5) = t.Rz;
 
 % for i = 1:70
 %     figure;
@@ -49,10 +49,7 @@ end
 
 %% Iterate through the selected point clouds and store them in the cell array
 for i = 1:numel(selectedIndices)
-
-
     index = selectedIndices(i);
-
     depthImage = readImage(depthImagesOut{index});
 
     % Calculate intrinsics for the current depth image using the correct index
@@ -148,8 +145,3 @@ end
 % xlabel('X (m)');
 % ylabel('Y (m)');
 % zlabel('Z (m)');
-
-%% Set axes limits
-% xlim([-1, 1]); % Set the limits for the X-axis
-% ylim([-1, 1]); % Set the limits for the Y-axis
-% zlim([0, 2]); % Set the limits for the Z-axis

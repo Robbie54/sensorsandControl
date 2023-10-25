@@ -9,7 +9,7 @@ depthImagesOut = readMessages(depthTopic);
 
 for i = 1:depthTopicMessageNum
     original = readImage(depthImagesOut{1});
-    distorted = readImage(depthImagesOut{i + 1});
+    distorted = readImage(depthImagesOut{i});
 
     ptsOriginal = detectSURFFeatures(original);
     ptsDistorted = detectSURFFeatures(distorted);
@@ -36,7 +36,7 @@ for i = 1:depthTopicMessageNum
     sc = Tinv(1,1);
     scaleRecovered = sqrt(ss*ss+sc*sc);
     thetaRecovered = atan2(ss,sc)*180/pi;
-
+    
     outputView = imref2d(size(original));
     recovered = imwarp(distorted,tform,'OutputView',outputView);
     figure;
