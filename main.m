@@ -50,7 +50,7 @@ masterPointCloud = selectedPointClouds{1};
 
 %% Merge the remaining selected point clouds one by one
 for i = 2:numel(selectedIndices)
-    masterPointCloud = pcmerge(masterPointCloud, selectedPointClouds{i}, 0.001); % You can adjust the mergeSize if needed
+    masterPointCloud = pcmerge(masterPointCloud, selectedPointClouds{i}, 0.0001); % You can adjust the mergeSize if needed
 end
 
 %% Visualize the master point cloud
@@ -84,13 +84,14 @@ XYZ = cat(3, X, Y, Z);
 pointCloudFunc = pointCloud(XYZ);
 
 % Visualize the point cloud (optional)
-figure;
-pcshow(pointCloudFunc);
-title('3D Point Cloud');
-xlabel('X (m)');
-ylabel('Y (m)');
-zlabel('Z (m)');
+% figure;
+% pcshow(pointCloudFunc);
+% title('3D Point Cloud');
+% xlabel('X (m)');
+% ylabel('Y (m)');
+% zlabel('Z (m)');
 end
+
 
 %% Region of Interest (ROI) - WIP
 % % Define the region of interest (ROI) limits
