@@ -11,9 +11,20 @@ depthTopicMessageNum = depthTopic.NumMessages;
 depthImagesOut = readMessages(depthTopic);
 
 %% Define camera parameters
-focalLength = [610.339, 609.110]; % Adjust these values as needed
-principalPoint = [317.109, 228.684]; % Adjust these values as needed
+%focalLength = [610.339, 609.110]; % Adjust these values as needed
+%principalPoint = [317.109, 228.684]; % Adjust these values as needed
 depthScaleFactor = 5e3;
+
+%% Depth camera intrinsics extracted from ModelNewBag topic /camera/depth/camera_info
+K = [421.7674560546875, 0, 423.2069396972656, 0, 421.7674560546875, 239.1299591064453, 0, 0, 1];
+focalLength = K(1);
+principalPoint = [K(3),K(6)]; %x and y respectively 
+
+
+
+
+
+
 
 %% Define the indices of the selected point clouds
 selectedIndices = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 22, 23, 24, 26, 27, 28, 29, 30, 79, 80, 81, 82, 88, 89, 90, 93, 104, 106, 107, 108, 127, 131, 134, 135, 136, 137, 138, 140, 150, 152, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 190, 191];
