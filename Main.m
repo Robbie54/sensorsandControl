@@ -77,19 +77,43 @@ end
 %% Initialize the master point cloud with the first selected point cloud
 masterPointCloud = selectedPointClouds{1};
 
-%% Merge the remaining selected point clouds one by one
-for i = 2:numel(selectedIndices)
-    masterPointCloud = pcmerge(masterPointCloud, selectedPointClouds{i}, 0.001); % You can adjust the mergeSize if needed this will change point density 
+maxNumPoints = 50;
+
+%Downsample the fixed point cloud
+fixedDownSampled = pcdownsample(selectedPointClouds{1},"nonuniformGridSample",maxNumPoints);
+
+%loop through the array of point clouds
+for i = 2:length(selectedPointClouds)
+    moving = selectedPointClouds{i};
+
+    %DownSample the moving point cloud
+    movingDownSampled = pcdownsample(moving, "nonuniformGridSample",maxNumPoints);
+
+    %Align the point clouds using plane-to-plane registration
+    [~, movingReg] = pcregistericp(movingDownSampled, fixedDownSampled, 'Metric','planeToPlane');
+
+    %update fixed point fcloud for the next iteration
+    fixedDownSampled = movingReg;
+
 end
 
-%% Visualize the master point cloud
 figure;
-pcshow(masterPointCloud, 'VerticalAxis', 'Y', 'VerticalAxisDir', 'Up', 'ViewPlane', 'YX');
-title('Selected Merged Point Cloud');
-xlabel('X (m)');
-ylabel('Y (m)');
-zlabel('Z (m)');
+pcshowpair(movingReg,selectedPointClouds{1},'VerticalAxis','Y','VerticalAxisDir','Down');
 
+
+% %% Merge the remaining selected point clouds one by one
+% for i = 2:numel(selectedIndices)
+%     masterPointCloud = pcmerge(masterPointCloud, selectedPointClouds{i}, 0.001); % You can adjust the mergeSize if needed this will change point density 
+% end
+% 
+% %% Visualize the master point cloud
+% figure;
+% pcshow(masterPointCloud, 'VerticalAxis', 'Y', 'VerticalAxisDir', 'Up', 'ViewPlane', 'YX');
+% title('Selected Merged Point Cloud');
+% xlabel('X (m)');
+% ylabel('Y (m)');
+% zlabel('Z (m)');
+% 
 %% Create Point Cloud Function
 function pointCloudFunc = createPointCloud(depthImage, intrinsics, depthScaleFactor)
 [rows, cols] = size(depthImage);
