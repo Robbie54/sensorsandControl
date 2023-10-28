@@ -71,7 +71,7 @@ for i = 1:numel(selectedIndices)
 
     % Store the point cloud in the selectedPointClouds array
     selectedPointClouds{i} = pointCloud;
-   
+
 end
 
 %% Initialize the master point cloud with the first selected point cloud
@@ -97,9 +97,8 @@ for i = 2:length(selectedPointClouds)
 
 end
 
-figure;
+%figure;
 pcshowpair(movingReg,selectedPointClouds{1},'VerticalAxis','Y','VerticalAxisDir','Down');
-
 
 % %% Merge the remaining selected point clouds one by one
 % for i = 2:numel(selectedIndices)
