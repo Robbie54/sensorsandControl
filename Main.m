@@ -32,6 +32,7 @@ selectedIndices = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 22, 
 % Initialize an empty cell array to store the selected point clouds
 selectedPointClouds = cell(1, numel(selectedIndices));
 
+
 %% Read TSV file 
 t = readtable("TestRandT.txt", "FileType","text",'Delimiter', '\t');
 %find xyz points 
@@ -83,7 +84,7 @@ for i = 1:numel(selectedIndices)
     % Store the point cloud in the selectedPointClouds array
     selectedPointClouds{i} = pointCloud;
 
-end
+    endx
 
 %% Initialize the master point cloud with the first selected point cloud
 masterPointCloud = selectedPointClouds{1};
