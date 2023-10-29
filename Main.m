@@ -1,62 +1,62 @@
-%% File Setup
-clear all
-clf
-close all
-clc
+% %% File Setup
+% clear all
+% clf
+% close all
+% clc
+% 
+% %% Rosbag Depth Reading
+% bag = rosbag('Modelnew2_360.bag');
+% depthTopic = select(bag, 'Topic', '/camera/depth/image_rect_raw');
+% allDepthImages = readMessages(depthTopic);
+% start_index = 201;
+% end_index = 213;
+% if end_index > depthTopic.NumMessages
+%     end_index = depthTopic.NumMessages;
+% end
+% 
+% %% Define camera parameters
+% %focalLength = [610.339, 609.110]; % Adjust these values as needed
+% %principalPoint = [317.109, 228.684]; % Adjust these values as needed
+% depthScaleFactor = 5e3;
+% 
+% %% Depth camera intrinsics extracted from ModelNewBag topic /camera/depth/camera_info
+% K = [421.7674560546875, 0, 423.2069396972656, 0, 421.7674560546875, 239.1299591064453, 0, 0, 1];
+% focalLength = K(1);
+% principalPoint = [K(3), K(6)]; %x and y respectively
+% 
+% %% Iterate through depth images 51-100 and create a point cloud
+% pointClouds = cell(1, end_index - start_index + 1);
+% roi = [-0.1 0.1 -0.05 0.1 0 0.2];
+% for k = start_index:end_index
+%     depthImage = readImage(allDepthImages{k});
+% 
+%     % Calculate intrinsics for the current depth image
+%     imageSize = size(depthImage, [1, 2]);
+%     intrinsics = cameraIntrinsics(focalLength, principalPoint, imageSize);
+% 
+%     % Convert the depth image to a 3D point cloud
+%     pointCloud = createPointCloud(depthImage, intrinsics, depthScaleFactor);
+% 
+%     %Apply ROI filter to the current point cloud
+%     indices = findPointsInROI(pointCloud, roi);
+%     roiPointCloud = select(pointCloud,indices);
+% 
+%     % Store the point cloud in the cell array
+%     pointClouds{k - start_index + 1} = roiPointCloud;
+% end
+% 
+% % Visualize all the point clouds
+% for k = 1:length(pointClouds)
+%     figure;
+%     pcshow(pointClouds{k}, 'VerticalAxis', 'Y', 'VerticalAxisDir', 'Down');
+%     title(['Point Cloud ', num2str(k + start_index - 1)]);
+%     xlabel('X (m)');
+%     ylabel('Y (m)');
+%     zlabel('Z (m)');
+% end
 
-%% Rosbag Depth Reading
-bag = rosbag('Modelnew2_360.bag');
-depthTopic = select(bag, 'Topic', '/camera/depth/image_rect_raw');
-allDepthImages = readMessages(depthTopic);
-start_index = 51;
-end_index = 100;
-if end_index > depthTopic.NumMessages
-    end_index = depthTopic.NumMessages;
-end
 
-%% Define camera parameters
-%focalLength = [610.339, 609.110]; % Adjust these values as needed
-%principalPoint = [317.109, 228.684]; % Adjust these values as needed
-depthScaleFactor = 5e3;
-
-%% Depth camera intrinsics extracted from ModelNewBag topic /camera/depth/camera_info
-K = [421.7674560546875, 0, 423.2069396972656, 0, 421.7674560546875, 239.1299591064453, 0, 0, 1];
-focalLength = K(1);
-principalPoint = [K(3), K(6)]; %x and y respectively
-
-%% Iterate through depth images 51-100 and create a point cloud
-pointClouds = cell(1, end_index - start_index + 1);
-roi = [-0.1 0.1 -0.05 0.1 0 0.2];
-for k = start_index:end_index
-    depthImage = readImage(allDepthImages{k});
-
-    % Calculate intrinsics for the current depth image
-    imageSize = size(depthImage, [1, 2]);
-    intrinsics = cameraIntrinsics(focalLength, principalPoint, imageSize);
-
-    % Convert the depth image to a 3D point cloud
-    pointCloud = createPointCloud(depthImage, intrinsics, depthScaleFactor);
-
-    %Apply ROI filter to the current point cloud
-    indices = findPointsInROI(pointCloud, roi);
-    roiPointCloud = select(pointCloud,indices);
-
-    % Store the point cloud in the cell array
-    pointClouds{k - start_index + 1} = roiPointCloud;
-end
-
-% Visualize all the point clouds
-for k = 1:length(pointClouds)
-    figure;
-    pcshow(pointClouds{k}, 'VerticalAxis', 'Y', 'VerticalAxisDir', 'Down');
-    title(['Point Cloud ', num2str(k + start_index - 1)]);
-    xlabel('X (m)');
-    ylabel('Y (m)');
-    zlabel('Z (m)');
-end
-
-
-%%main code 
+%main code 
 
 % pcshow(pointClouds{1}, 'VerticalAxis', 'Y', 'VerticalAxisDir', 'Down');
 %     title(['Point Cloud ', num2str(k + start_index - 1)]);
@@ -71,8 +71,8 @@ end
 % 
 % 
 %     roiPointCloud = select(pointClouds{1}, indices);
-
- 
+% 
+% 
 % hopeful = removeOutliers(pointClouds{1});
 % pcshow(hopeful, 'VerticalAxis', 'Y', 'VerticalAxisDir', 'Down');
 %     title(['new Cloud ', num2str(k + start_index - 1)]);
@@ -81,118 +81,105 @@ end
 %     zlabel('Z (m)');
 
 
-% 
-% %% File Setup
-% clear all
-% clf
-% close all
-% clc
-% 
-% %% Rosbag Depth Reading
-% bag = rosbag('Modelnew2_360.bag');
-% depthTopic = select(bag, 'Topic', '/camera/depth/image_rect_raw');
-% depthTopicMessageNum = depthTopic.NumMessages;
-% depthImagesOut = readMessages(depthTopic);
-% 
-% %% Define camera parameters
-% %focalLength = [610.339, 609.110]; % Adjust these values as needed
-% %principalPoint = [317.109, 228.684]; % Adjust these values as needed
-% depthScaleFactor = 5e3;
-% 
-% %% Depth camera intrinsics extracted from ModelNewBag topic /camera/depth/camera_info
-% K = [421.7674560546875, 0, 423.2069396972656, 0, 421.7674560546875, 239.1299591064453, 0, 0, 1];
-% focalLength = K(1);
-% principalPoint = [K(3),K(6)]; %x and y respectively 
-% 
-% 
-% 
-% 
-% 
-% 
-% 
-% %% Define the indices of the selected point clouds
-% %selectedIndices = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 22, 23, 24, 26, 27, 28, 29, 30, 79, 80, 81, 82, 88, 89, 90, 93, 104, 106, 107, 108, 127, 131, 134, 135, 136, 137, 138, 140, 150, 152, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 190, 191];
-% 
-% %selectedIndices = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,19,22,23,24,26,27,28,29,30,79,80,81,82,84,85,86,88,89,90,93,95,104,105,106,108,108,127,131,134,135,136,137,138,140,149,150,152,153,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,190,191,196,201];
-% 
-% %points 196 and 201 show promise and have sides of the book. will need to
-% %remove the interference 
-% 
-% %selectedIndices = 1:213;
-% % Initialize an empty cell array to store the selected point clouds
-% selectedPointClouds = cell(1, numel(selectedIndices));
-% 
-% 
-% %% Read TSV file 
-% t = readtable("TestRandT.txt", "FileType","text",'Delimiter', '\t');
-% %find xyz points 
-% 
-% % tData = zeros(70,3);
-% % tData(:,1) = t(:,10);
-% 
-% tData = zeros(80,3);
-% tData(:,1) = t.Rx;
-% tData(:,3) = t.Ry;
-% tData(:,5) = t.Rz;
-% 
-% % for i = 1:70
-% %     figure;
-% %     plot3(tData(i,1),tData(i,2),tData(i,3), 'ro'); % 'ro' represents red circles
-% %     hold on;
-% % end
-% axis equal;
-% 
-% %% Define the camera intrinsics for all depth images (outside the loop)
-% intrinsicsList = cell(1, depthTopicMessageNum);
-% for k = 1:depthTopicMessageNum
-%     imageSize = size(depthImagesOut{k}, [1, 2]);
-%     intrinsicsList{k} = cameraIntrinsics(focalLength, principalPoint, imageSize);
-% end
-% 
-% %% Iterate through the selected point clouds and store them in the cell array
-% for i = 1:numel(selectedIndices)
-%     index = selectedIndices(i);
-%     depthImage = readImage(depthImagesOut{index});
-% 
-%     % Calculate intrinsics for the current depth image using the correct index
-%     imageSize = size(depthImage, [1, 2]);
-%     intrinsics = intrinsicsList{index};
-% 
-%     % Convert the depth image to a 3D point cloud using the correct intrinsics
-%     pointCloud = createPointCloud(depthImage, intrinsics, depthScaleFactor);
-% 
-%     %% Point Cloud Rotation and Translation
-%     % %this is for translating and rotating point clouds needs to be done for
-%     % %each
-%     % rotationAngles = [tData(i,1),tData(i,2),tData(i,3)]; %this is wrong just random rotation of tsv we need to calibrate
-%     % translation = [0 0 0];
-%     % tform = rigidtform3d(rotationAngles,translation);
-%     % 
-%     % %Transform each point cloud.
-%     % ptCloudOut = pctransform(pointCloud,tform);
-% 
-%     % Store the point cloud in the selectedPointClouds array
-%     selectedPointClouds{i} = pointCloud;
-% 
-% end
-% 
-% %% Initialize the master point cloud with the first selected point cloud
-% 
-% fixedSample = pcdownsample(selectedPointClouds{1},'random',0.1);
-% 
-% 
-% for i = 2:length(selectedPointClouds)
-% 
-%     movingSample = pcdownsample(selectedPointClouds{i},'random',0.1);
-% 
-%     [~,movingReg] = pcregistericp(movingSample,fixedSample,Metric="PlaneToPlane");
-% 
-%     fixedSample = movingReg;
-% 
-% end
-% 
-% pcshow(fixedSample);
-% 
+
+%% File Setup
+clear all
+clf
+close all
+clc
+
+%% Rosbag Depth Reading
+bag = rosbag('Modelnew2_360.bag');
+depthTopic = select(bag, 'Topic', '/camera/depth/image_rect_raw');
+depthTopicMessageNum = depthTopic.NumMessages;
+depthImagesOut = readMessages(depthTopic);
+
+%% Define camera parameters
+%focalLength = [610.339, 609.110]; % Adjust these values as needed
+%principalPoint = [317.109, 228.684]; % Adjust these values as needed
+depthScaleFactor = 5e3;
+
+%% Depth camera intrinsics extracted from ModelNewBag topic /camera/depth/camera_info
+K = [421.7674560546875, 0, 423.2069396972656, 0, 421.7674560546875, 239.1299591064453, 0, 0, 1];
+focalLength = K(1);
+principalPoint = [K(3),K(6)]; %x and y respectively 
+
+
+
+
+
+
+
+%% Define the indices of the selected point clouds
+%selectedIndices = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 22, 23, 24, 26, 27, 28, 29, 30, 79, 80, 81, 82, 88, 89, 90, 93, 104, 106, 107, 108, 127, 131, 134, 135, 136, 137, 138, 140, 150, 152, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 190, 191];
+
+%selectedIndices = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,79,80,81,82,84,85,86,88,89,90,93,95,104,105,106,108,108,127,131,134,135,136,137,138,140,149,150,152,153,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,190,191,196,201];
+
+selectedIndices = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,60,61,62,65,66,68,69,73,74,75,78,79,80,81,82,83,84,85,86,87,88,89,90,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,127,131,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,200,201,204,206,207,208,209,210,211,212,213]
+
+
+
+%points 196 and 201 show promise and have sides of the book. will need to
+%remove the interference 
+
+%selectedIndices = 1:213;
+% Initialize an empty cell array to store the selected point clouds
+selectedPointClouds = cell(1, numel(selectedIndices));
+
+
+
+
+%% Define the camera intrinsics for all depth images (outside the loop)
+intrinsicsList = cell(1, depthTopicMessageNum);
+for k = 1:depthTopicMessageNum
+    imageSize = size(depthImagesOut{k}, [1, 2]);
+    intrinsicsList{k} = cameraIntrinsics(focalLength, principalPoint, imageSize);
+end
+
+%% Iterate through the selected point clouds and store them in the cell array
+for i = 1:numel(selectedIndices)
+    index = selectedIndices(i);
+    depthImage = readImage(depthImagesOut{index});
+
+    % Calculate intrinsics for the current depth image using the correct index
+    imageSize = size(depthImage, [1, 2]);
+    intrinsics = intrinsicsList{index};
+
+    % Convert the depth image to a 3D point cloud using the correct intrinsics
+    pointCloud = createPointCloud(depthImage, intrinsics, depthScaleFactor);
+
+    %% Point Cloud Rotation and Translation
+    % %this is for translating and rotating point clouds needs to be done for
+    % %each
+    % rotationAngles = [tData(i,1),tData(i,2),tData(i,3)]; %this is wrong just random rotation of tsv we need to calibrate
+    % translation = [0 0 0];
+    % tform = rigidtform3d(rotationAngles,translation);
+    % 
+    % %Transform each point cloud.
+    % ptCloudOut = pctransform(pointCloud,tform);
+
+    % Store the point cloud in the selectedPointClouds array
+    selectedPointClouds{i} = pointCloud;
+
+end
+
+%% Initialize the master point cloud with the first selected point cloud
+
+fixedSample = pcdownsample(selectedPointClouds{1},'random',0.1);
+
+
+for i = 2:length(selectedPointClouds)
+
+    movingSample = pcdownsample(selectedPointClouds{i},'random',0.1);
+
+    [~,movingReg] = pcregistericp(movingSample,fixedSample,Metric="PlaneToPlane");
+
+    fixedSample = movingReg;
+
+end
+
+pcshow(fixedSample);
+
 
 %figure;
 %pcshowpair(movingReg,selectedPointClouds{1},'VerticalAxis','Y','VerticalAxisDir','Down');

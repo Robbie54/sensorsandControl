@@ -30,3 +30,22 @@ bag = rosbag('CalibNew_360.bag');
 %this could possibly be the end effector location
 quaternion = [0.6004000306129456,-0.48580002784729,-0.5668999552726746,0.2864000201225281];
 translation = [-12.0600004196167,31.46999931335449,-316.0299987792969];
+
+%% Read TSV file 
+t = readtable("TestRandT.txt", "FileType","text",'Delimiter', '\t');
+%find xyz points 
+
+% tData = zeros(70,3);
+% tData(:,1) = t(:,10);
+
+tData = zeros(80,3);
+tData(:,1) = t.Rx;
+tData(:,3) = t.Ry;
+tData(:,5) = t.Rz;
+
+% for i = 1:70
+%     figure;
+%     plot3(tData(i,1),tData(i,2),tData(i,3), 'ro'); % 'ro' represents red circles
+%     hold on;
+% end
+axis equal;
