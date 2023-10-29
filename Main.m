@@ -44,106 +44,143 @@ for k = 1:depthTopicMessageNum
     pointClouds{k} = roiPointCloud;
 end
 
-% Visualize specific point clouds
-for k = [1, 50, 117, 118, 196, 201]
-    figure;
-    pcshow(pointClouds{k}, 'VerticalAxis', 'Y', 'VerticalAxisDir', 'Down');
-    title(['Point Cloud ', num2str(k)]);
-    xlabel('X (m)');
-    ylabel('Y (m)');
-    zlabel('Z (m)');
-end
 
 
-
-
-
-%% File Setup
-clear all
-clf
-close all
-clc
-
-%% Rosbag Depth Reading
-bag = rosbag('Modelnew2_360.bag');
-depthTopic = select(bag, 'Topic', '/camera/depth/image_rect_raw');
-depthTopicMessageNum = depthTopic.NumMessages;
-depthImagesOut = readMessages(depthTopic);
-
-%% Depth camera intrinsics extracted from ModelNewBag topic /camera/depth/camera_info
-K = [421.7674560546875, 0, 423.2069396972656, 0, 421.7674560546875, 239.1299591064453, 0, 0, 1];
-focalLength = K(1);
-principalPoint = [K(3),K(6)]; %x and y respectively 
-depthScaleFactor = 5e3; %experimental depth svale factor value set 
-
-
-%% Define the indices of the selected point clouds
-
-%not all depth valuses provide useful information. Lots of interference and
-%noise can be found in these images, as well as outlying artefacts. these
-%must be filtered out manually. for the outying artefacts, they can be
-%cropped out to include the important data.
-
-
-%selectedIndices = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 22, 23, 24, 26, 27, 28, 29, 30, 79, 80, 81, 82, 88, 89, 90, 93, 104, 106, 107, 108, 127, 131, 134, 135, 136, 137, 138, 140, 150, 152, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 190, 191];
-%selectedIndices = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,60,61,62,65,66,68,69,73,74,75,78,79,80,81,82,83,84,85,86,87,88,89,90,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,127,131,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,200,201,204,206,207,208,209,210,211,212,213];
-
-
-%not all depth images can be selected to allign and merge into the master
-%point cloud. Because we are down sampling, certain data sets that provide
-%unique information from the other frames, will slowly be filterd out when
-%downsampling all frames to keep the point cloud count down.
-selectedIndices = [1,50,117,118,196,201]; % best values 
-
-% Initialize an empty cell array to store the selected point clouds
-selectedPointClouds = cell(1, numel(selectedIndices));
-
-
-%% Define the camera intrinsics for all depth images (outside the loop)
-intrinsicsList = cell(1, depthTopicMessageNum);
-for k = 1:depthTopicMessageNum
-    imageSize = size(depthImagesOut{k}, [1, 2]);
-    intrinsicsList{k} = cameraIntrinsics(focalLength, principalPoint, imageSize);
-end
-
-%% Iterate through the selected point clouds and store them in the cell array
-for i = 1:numel(selectedIndices)
-    index = selectedIndices(i);
-    depthImage = readImage(depthImagesOut{index});
-
-    % Calculate intrinsics for the current depth image using the correct index
-    imageSize = size(depthImage, [1, 2]);
-    intrinsics = intrinsicsList{index};
-
-    % Convert the depth image to a 3D point cloud using the correct intrinsics
-    pointCloud = createPointCloud(depthImage, intrinsics, depthScaleFactor);
-
-    %Apply ROI filter to the current point cloud
-    indices = findPointsInROI(pointCloud, roi);
-    roiPointCloud = select(pointCloud,indices);
-    
-
-    % Store the point cloud in the selectedPointClouds array
-    selectedPointClouds{i} = pointCloud;
-
-end
+% % Visualize specific point clouds
+% for k = [1, 201]
+%     figure;
+%     pcshow(pointClouds{k}, 'VerticalAxis', 'Y', 'VerticalAxisDir', 'Down');
+%     title(['Point Cloud ', num2str(k)]);
+%     xlabel('X (m)');
+%     ylabel('Y (m)');
+%     zlabel('Z (m)');
+% end
 
 %% Initialize the master point cloud with the first selected point cloud
 
-fixedSample = pcdownsample(selectedPointClouds{1},'random',0.1);
+fixedSample = pcdownsample(pointClouds{1},'random',0.1);
 
-
-for i = 2:length(selectedPointClouds)
-
-    movingSample = pcdownsample(selectedPointClouds{i},'random',0.1);
-
-    [~,movingReg] = pcregistericp(movingSample,fixedSample,Metric="PlaneToPlane");
-
-    fixedSample = movingReg;
-
-end
-
+figure;
 pcshow(fixedSample);
+title('down sampled point cloud 1');
+
+%for i = 2:length(selectedPointClouds)
+
+
+
+    movingSample = pcdownsample(pointClouds{201},'random',0.1);
+
+
+    figure;
+    variable = pointClouds{201};
+    pcshow(variable);
+
+    figure;
+    pcshow(movingSample);
+    title('down sampled point cloud 201')
+    
+    t = pcregistericp(fixedSample,movingSample);
+
+    [t,movingReg] = pcregistericp(fixedSample,movingSample);
+    figure;
+    pcshow(movingReg);
+%%
+    % figure;
+    % pcshow(movingReg);
+    % title('merged point cloud');
+
+%end
+
+
+
+
+% %% File Setup
+% clear all
+% clf
+% close all
+% clc
+% 
+% %% Rosbag Depth Reading
+% bag = rosbag('Modelnew2_360.bag');
+% depthTopic = select(bag, 'Topic', '/camera/depth/image_rect_raw');
+% depthTopicMessageNum = depthTopic.NumMessages;
+% depthImagesOut = readMessages(depthTopic);
+% 
+% %% Depth camera intrinsics extracted from ModelNewBag topic /camera/depth/camera_info
+% K = [421.7674560546875, 0, 423.2069396972656, 0, 421.7674560546875, 239.1299591064453, 0, 0, 1];
+% roi = [-0.04 0.035 -0.02 0.1 0 0.08]; %roi = [-0.1 0.1 -0.05 1 0 0.2];
+% focalLength = K(1);
+% principalPoint = [K(3),K(6)]; %x and y respectively 
+% depthScaleFactor = 5e3; %experimental depth svale factor value set 
+% 
+% 
+% %% Define the indices of the selected point clouds
+% 
+% %not all depth valuses provide useful information. Lots of interference and
+% %noise can be found in these images, as well as outlying artefacts. these
+% %must be filtered out manually. for the outying artefacts, they can be
+% %cropped out to include the important data.
+% 
+% 
+% %selectedIndices = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 22, 23, 24, 26, 27, 28, 29, 30, 79, 80, 81, 82, 88, 89, 90, 93, 104, 106, 107, 108, 127, 131, 134, 135, 136, 137, 138, 140, 150, 152, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 190, 191];
+% %selectedIndices = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,60,61,62,65,66,68,69,73,74,75,78,79,80,81,82,83,84,85,86,87,88,89,90,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,127,131,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,200,201,204,206,207,208,209,210,211,212,213];
+% 
+% 
+% %not all depth images can be selected to allign and merge into the master
+% %point cloud. Because we are down sampling, certain data sets that provide
+% %unique information from the other frames, will slowly be filterd out when
+% %downsampling all frames to keep the point cloud count down.
+% selectedIndices = [1,50,117,118,196,201]; % best values 
+% 
+% % Initialize an empty cell array to store the selected point clouds
+% selectedPointClouds = cell(1, numel(selectedIndices));
+% 
+% 
+% %% Define the camera intrinsics for all depth images (outside the loop)
+% intrinsicsList = cell(1, depthTopicMessageNum);
+% for k = 1:depthTopicMessageNum
+%     imageSize = size(depthImagesOut{k}, [1, 2]);
+%     intrinsicsList{k} = cameraIntrinsics(focalLength, principalPoint, imageSize);
+% end
+% 
+% %% Iterate through the selected point clouds and store them in the cell array
+% for i = 1:numel(selectedIndices)
+%     index = selectedIndices(i);
+%     depthImage = readImage(depthImagesOut{index});
+% 
+%     % Calculate intrinsics for the current depth image using the correct index
+%     imageSize = size(depthImage, [1, 2]);
+%     intrinsics = intrinsicsList{index};
+% 
+%     % Convert the depth image to a 3D point cloud using the correct intrinsics
+%     pointCloud = createPointCloud(depthImage, intrinsics, depthScaleFactor);
+% 
+%     %Apply ROI filter to the current point cloud
+%     indices = findPointsInROI(pointCloud, roi);
+%     roiPointCloud = select(pointCloud,indices);
+% 
+% 
+%     % Store the point cloud in the selectedPointClouds array
+%     selectedPointClouds{i} = pointCloud;
+% 
+% end
+% 
+% %% Initialize the master point cloud with the first selected point cloud
+% 
+% fixedSample = pcdownsample(selectedPointClouds{1},'random',0.5);
+% 
+% 
+% for i = 2:length(selectedPointClouds)
+% 
+%     movingSample = pcdownsample(selectedPointClouds{i},'random',0.5);
+% 
+%     [~,movingReg] = pcregistericp(movingSample,fixedSample,Metric="PlaneToPlane");
+% 
+%     fixedSample = movingReg;
+% 
+% end
+% 
+% pcshow(fixedSample);
 
 
 % Create Point Cloud Function
