@@ -1,7 +1,7 @@
 # sensorsandControl
 
 ## Code structure 
-The code is structered in one script with a few supporting functions following the code standard with proper code structure and syntax. 
+The code is structered in one script with a few supporting functions following the code standard with proper code structure and syntax. Run the main.m file to reconstruct the 3D environment. This must be run with the ROSBAG and tsv files in the path directory.
 ### Variable setup 
 Variables are initialised first with the creation and extraction of the relevant rosbag topics before moving on to setting up the camera intrinsics taken from the ros bag topics and various other relevant empty variables.
 ### Point Cloud Selection 
