@@ -1,10 +1,13 @@
 # sensorsandControl
 
 ## Code structure 
-The code is structered in one script with a few supporting functions. 
-It starts by creating and extracting the rosbag topics before moving on to setting up the camera intrinsics taken from the ros bag topics.
-Next the key point cloud frames are manually selected and the region of interested points are allocated.
-The code then sets up the point clouds and cuts out points outside of the region of interest.
+The code is structered in one script with a few supporting functions following the code standard with proper code structure and syntax. 
+### Variable setup 
+Variables are initialised first with the creation and extraction of the relevant rosbag topics before moving on to setting up the camera intrinsics taken from the ros bag topics and various other relevant empty variables.
+### Point Cloud Selection 
+The key point cloud frames are manually selected and the region of interested points are allocated.
+The code then sets up the point clouds and cuts out points outside of the region of interest to remove artefacts from the depth image data.
+### Point Cloud Alignment and display
 Next the point clouds are aligned and overlayed on top of each other with a supporting function create point cloud to help change the variable type.
 Finally each point cloud is displyed and overlayed ontop of each other to create the final point cloud. 
 
