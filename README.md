@@ -14,11 +14,11 @@ Finally each point cloud is displyed and overlayed ontop of each other to create
 ## Individual contributions 
 Contributions were often done as a group with individual contributions being heavily research and experimental based to bring to our meetings. Individually there was many failed attempts that did not make it into the final assignments script.
 
-Robert focused on the initial phases of the project learning how to set up topics and initial point cloud functions, as well as attempting various methods for rgb overlay and alignement using the rot and trans in the tsv and auroura topic. 30%
+Robert focused on the initial phases of the project learning how to set up topics and initial point cloud functions, as well as attempting various methods for rgb overlay and alignement using the rot and trans in the tsv and auroura topic. 33%
 
-Milo focused on researching how to remove interferance in the point cloud images with the region of interferance. He also spent time on various methods of aligning the point clouds and learning     about the em sensor and how to calibrate it. 30%
+Milo focused on researching how to remove interferance in the point cloud images with the region of interferance. He also spent time on various methods of aligning the point clouds and learning     about the em sensor and how to calibrate it. 33%
 
-Max focused on going through the point clouds and removing unusable ones. He also worked on aligning the point clouds properly, and spent time on looking into the availabe rosbag topics. 30%
+Max focused on going through the point clouds and removing unusable ones. He also worked on aligning the point clouds properly, and spent time on looking into the availabe rosbag topics. 33%
 
 # Authors: 
 
