@@ -18,8 +18,7 @@ Robert focused on the initial phases of the project learning how to set up topic
 
 Milo focused on researching how to remove interferance in the point cloud images with the region of interferance. He also spent time on various methods of aligning the point clouds and learning     about the em sensor and how to calibrate it. 
 
-Max focused on going through the point clouds and removing unusable ones. he also attempted to align the point clouds and spent time learning how to set up the       topics. 
-
+Max focused on going through the point clouds and removing unusable ones. He also worked on aligning the point clouds properly, and spent time on looking into the availabe rosbag topics.
 
 # Authors: 
 
